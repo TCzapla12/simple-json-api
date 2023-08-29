@@ -1,16 +1,11 @@
 import { useQuery } from "jsonapi-react";
-import { useEffect } from "react";
-import { Link, useParams } from "react-router-dom"
+import { useParams } from "react-router-dom"
 import { productDTO } from "./products.model";
 import ReactMarkdown from "react-markdown";
 
 export default function ProductDetails() {
     const { id }: any = useParams();
     const product = useQuery(`products/${id}?include=category`);
-
-    useEffect(() => {
-        console.log(product)
-    }, [id, product.isLoading])
 
     return product.data ?
         <div className="mt-2">

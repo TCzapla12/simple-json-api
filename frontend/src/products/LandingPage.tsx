@@ -4,6 +4,8 @@ import { categoryDTO, productDTO } from "./products.model";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Form, Formik } from "formik";
+import Pagination from "../utils/Pagination";
+import RecordsPerPageSelect from "../utils/RecordsPerPageSelect";
 export default function LandingPage() {
     const query = new URLSearchParams(useLocation().search);
     const products = useQuery("products?include=category&" + query);
@@ -22,6 +24,13 @@ export default function LandingPage() {
 
     const [totalAmountOfPages, setTotalAmountOfPages] = useState(0);
 
+    function getPages(value: number) {
+        if (products.meta) {
+            return Math.ceil(products.meta?.total / value)
+        }
+        return 0;
+    }
+
     function searchProducts(values: filterProductsForm) {
         modifyURL(values);
         //useQuery
@@ -29,22 +38,33 @@ export default function LandingPage() {
     }
 
     function modifyURL(values: filterProductsForm) {
-        console.log(values.categoryId)
+        const filterStrings: string[] = [];
         const queryStrings: string[] = [];
         if (values.name) {
-            queryStrings.push(`filter=contains(name,'${values.name}')`);
+            filterStrings.push(`contains(name,'${values.name}')`);
         }
-        if (values.categoryId) {
-            queryStrings.push(`filter=contains(category.name,'${values.categoryId}')`);
+        if (values.categoryId > 0) {
+            filterStrings.push(`equals(category.id,'${values.categoryId}')`);
         }
         if (values.priceMin > 0) {
-            queryStrings.push(`filter=greaterOrEqual(price,'${values.priceMin}')`);
+            filterStrings.push(`greaterOrEqual(price,'${values.priceMin}')`);
         }
         if (values.priceMax > 0) {
-            queryStrings.push(`filter=lessOrEqual(price,'${values.priceMax}')`);
+            filterStrings.push(`lessOrEqual(price,'${values.priceMax}')`);
         }
-        if (values.sort) {
-            queryStrings.push(`sort=${values.name}`);
+        if (filterStrings.length > 1) {
+            queryStrings.push(`filter=and(${filterStrings.join(",")})`)
+        } else if (filterStrings.length === 1) {
+            queryStrings.push(`filter=${filterStrings[0]}`);
+        }
+        if (values.sort == 'alphabetic') {
+            queryStrings.push(`sort=name`);
+        }
+        else if (values.sort == 'ascending') {
+            queryStrings.push(`sort=price`);
+        }
+        else if (values.sort == 'descending') {
+            queryStrings.push(`sort=-price`);
         }
         queryStrings.push(`page[size]=${values.recordsPerPage}`);
         queryStrings.push(`page[number]=${values.page}`);
@@ -52,35 +72,36 @@ export default function LandingPage() {
     }
     //two quierys
     useEffect(() => {
-        console.log(query.get("category"))
-        if (query.get("name")) {
-            initialValues.name = query.get("name")!;
-        }
-        if (query.get("category")) {
-            initialValues.categoryId = parseInt(query.get("category")!, 10);
-        }
-        if (query.get("pricemin")) {
-            initialValues.priceMin = parseInt(query.get("pricemin")!, 10);
-        }
-        if (query.get("pricemax")) {
-            initialValues.priceMax = parseInt(query.get("pricemax")!, 10);
-        }
-        if (query.get("sort")) {
-            initialValues.sort = query.get("sort")!;
-        }
-        if (query.get("page[size]")) {
-            initialValues.recordsPerPage = parseInt(query.get("page[size]")!, 10);
-        }
-        if (query.get("page[number]")) {
-            initialValues.page = parseInt(query.get("page[number]")!, 10);
-        }
+        // console.log(query.get("category"))
+        // if (query.get("name")) {
+        //     initialValues.name = query.get("name")!;
+        // }
+        // if (query.get("category")) {
+        //     initialValues.categoryId = parseInt(query.get("category")!, 10);
+        // }
+        // if (query.get("pricemin")) {
+        //     initialValues.priceMin = parseInt(query.get("pricemin")!, 10);
+        // }
+        // if (query.get("pricemax")) {
+        //     initialValues.priceMax = parseInt(query.get("pricemax")!, 10);
+        // }
+        // if (query.get("sort")) {
+        //     initialValues.sort = query.get("sort")!;
+        // }
+        // if (query.get("page[size]")) {
+        //     initialValues.recordsPerPage = parseInt(query.get("page[size]")!, 10);
+        // }
+        // if (query.get("page[number]")) {
+        //     initialValues.page = parseInt(query.get("page[number]")!, 10);
+        // }
         searchProducts(initialValues);
     }, []);
 
-    useEffect(() => {
-        console.log(products.data)
-        console.log(products)
-    }, [products.isLoading])
+    // useEffect(() => {
+    //     console.log(query)
+    //     // console.log(products.data)
+    //     // console.log(products)
+    // }, [products.isLoading])
 
     return (
         <>
@@ -91,29 +112,67 @@ export default function LandingPage() {
                 {(formikProps) => (
                     <>
                         <Form>
-                            <div className="row gx-3 align-items-center mb-3">
+                            <div className="row gx-3 align-items-center mb-3 gy-3">
                                 <div className="col-auto">
                                     <input type="text" className="form-control" id="name" placeholder="Name of the product" {...formikProps.getFieldProps("name")} />
                                 </div>
                                 <div className="col-auto">
-                                    <select className="form-select" {...formikProps.getFieldProps("category")}>
-                                        <option value="0">--Choose a category--</option>
-                                        {categories.data?.map((category: categoryDTO) => <option key={category.id} value={category.name}>{category.name}</option>)}
-                                    </select>
+                                    <div className="input-group">
+                                        <div className="input-group-prepend">
+                                            <span className="input-group-text">Category</span>
+                                        </div>
+                                        <select className="form-select" {...formikProps.getFieldProps("categoryId")}>
+                                            <option value="0">All</option>
+                                            {categories.data?.map((category: categoryDTO) => <option key={category.id} value={category.id}>{category.name}</option>)}
+                                        </select>
+                                    </div>
+
                                 </div>
                                 <div className="col-auto w-auto">
-                                    <input type="number" className="form-control" id="priceMin" {...formikProps.getFieldProps("priceMin")} />
+                                    <div className="input-group">
+                                        <div className="input-group-prepend">
+                                            <span className="input-group-text">from</span>
+                                        </div>
+                                        <input style={{ maxWidth: '5rem' }} min="0" type="number" className="form-control" id="priceMin" {...formikProps.getFieldProps("priceMin")} />
+                                        <div className="input-group-append">
+                                            <span className="input-group-text">zł</span>
+                                        </div>
+                                    </div>
+
                                 </div>
                                 <div className="col-auto">
                                     -
                                 </div>
                                 <div className="col-auto">
-                                    <input type="number" className="form-control" id="priceMax" {...formikProps.getFieldProps("priceMax")} />
+                                    <div className="input-group">
+                                        <div className="input-group-prepend">
+                                            <span className="input-group-text">to</span>
+                                        </div>
+                                        <input style={{ maxWidth: '5rem' }} min={formikProps.values.priceMin} type="number" className="form-control" id="priceMax" {...formikProps.getFieldProps("priceMax")} />
+                                        <div className="input-group-append">
+                                            <span className="input-group-text">zł</span>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div className="col-auto">
-                                    <select className="form-select"{...formikProps.getFieldProps("category")}>
-                                        <option value="0">--Choose sorting--</option>
-                                    </select>
+                                    <div className="input-group">
+                                        <div className="input-group-prepend">
+                                            <span className="input-group-text">Sort by</span>
+                                        </div>
+                                        <select className="form-select"{...formikProps.getFieldProps("sort")}>
+                                            <option value="0">Default</option>
+                                            <option value="alphabetic">A to Z</option>
+                                            <option value="ascending">Low to High</option>
+                                            <option value="descending">High to Low</option>
+                                        </select>
+                                    </div>
+
+                                </div>
+                                <div className="col-auto">
+                                    <RecordsPerPageSelect onChange={(amountOfRecords) => {
+                                        formikProps.values.page = 1;
+                                        formikProps.values.recordsPerPage = amountOfRecords;
+                                    }} />
                                 </div>
                                 <div className="col-auto">
                                     <button className="btn btn-primary" onClick={() => formikProps.submitForm()}>
@@ -129,12 +188,18 @@ export default function LandingPage() {
                                         Clear
                                     </button>
                                 </div>
+
                             </div>
                         </Form>
+                        <ProductsList products={products.data as productDTO[]} isLoading={products.isLoading} errors={products.errors} />
+                        <Pagination totalAmountOfPages={getPages(formikProps.values.recordsPerPage)} onChange={newPage => {
+                            formikProps.values.page = newPage;
+                            searchProducts(formikProps.values);
+                        }} currentPage={formikProps.values.page} />
                     </>
                 )}
             </Formik>
-            <ProductsList products={products.data as productDTO[]} isLoading={products.isLoading} errors={products.errors} />
+
         </>
 
     )
