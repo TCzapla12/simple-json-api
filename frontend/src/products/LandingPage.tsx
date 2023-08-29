@@ -8,6 +8,7 @@ import Pagination from "../utils/Pagination";
 import RecordsPerPageSelect from "../utils/RecordsPerPageSelect";
 import DisplayErrors, { error } from "../utils/DisplayErrors";
 import { indirectUrlCategories, indirectUrlProduct } from "../endpoints";
+import PriceRangeInput from "../utils/PriceRangeInput";
 export default function LandingPage() {
     const query = new URLSearchParams(useLocation().search);
 
@@ -102,31 +103,10 @@ export default function LandingPage() {
                                         </select>
                                     </div>
                                 </div>
-                                <div className="col-auto w-auto">
-                                    <div className="input-group">
-                                        <div className="input-group-prepend">
-                                            <span className="input-group-text">from</span>
-                                        </div>
-                                        <input style={{ maxWidth: '5rem' }} min="0" type="number" className="form-control" id="priceMin" {...formikProps.getFieldProps("priceMin")} />
-                                        <div className="input-group-append">
-                                            <span className="input-group-text">zł</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="col-auto">
-                                    -
-                                </div>
-                                <div className="col-auto">
-                                    <div className="input-group">
-                                        <div className="input-group-prepend">
-                                            <span className="input-group-text">to</span>
-                                        </div>
-                                        <input style={{ maxWidth: '5rem' }} min={formikProps.values.priceMin} type="number" className="form-control" id="priceMax" {...formikProps.getFieldProps("priceMax")} />
-                                        <div className="input-group-append">
-                                            <span className="input-group-text">zł</span>
-                                        </div>
-                                    </div>
-                                </div>
+                                <PriceRangeInput priceMin={formikProps.values.priceMin} priceMax={formikProps.values.priceMax}
+                                    onChangeMin={(value) => formikProps.values.priceMin = value}
+                                    onChangeMax={(value) => formikProps.values.priceMax = value}
+                                />
                                 <div className="col-auto">
                                     <div className="input-group">
                                         <div className="input-group-prepend">
