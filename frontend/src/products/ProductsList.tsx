@@ -32,12 +32,10 @@ export default function ProductsList(props: productsListProps) {
                     </td>
                     <td>{product.name}</td>
                     <td>{product.category.name}</td>
-                    
                     <td>{product.price} zł</td>
                 </tr>
             ))}
         </tbody>
-
     </table>
 }
 

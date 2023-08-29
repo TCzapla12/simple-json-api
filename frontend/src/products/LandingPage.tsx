@@ -2,15 +2,20 @@ import { useQuery } from "jsonapi-react"
 import ProductsList from "./ProductsList";
 import { categoryDTO, productDTO } from "./products.model";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Form, Formik } from "formik";
 import Pagination from "../utils/Pagination";
 import RecordsPerPageSelect from "../utils/RecordsPerPageSelect";
 import DisplayErrors, { error } from "../utils/DisplayErrors";
+import { indirectUrlCategories, indirectUrlProduct } from "../endpoints";
 export default function LandingPage() {
     const query = new URLSearchParams(useLocation().search);
-    const products = useQuery("products?include=category&" + query);
-    const categories = useQuery("categories")
+
+    const products = useQuery(indirectUrlProduct + "?include=category&" + query);
+    const categories = useQuery(indirectUrlCategories);
+
+    const navigation = useNavigate();
+
     const initialValues: filterProductsForm = {
         name: '',
         categoryId: 0,
@@ -21,21 +26,15 @@ export default function LandingPage() {
         recordsPerPage: 10
     }
 
-    const navigation = useNavigate();
-
-    const [totalAmountOfPages, setTotalAmountOfPages] = useState(0);
-
     function getPages(value: number) {
         if (products.meta) {
-            return Math.ceil(products.meta?.total / value)
+            return Math.ceil(products.meta.total / value);
         }
         return 0;
     }
 
     function searchProducts(values: filterProductsForm) {
         modifyURL(values);
-        //useQuery
-        //category
     }
 
     function modifyURL(values: filterProductsForm) {
@@ -58,54 +57,30 @@ export default function LandingPage() {
         } else if (filterStrings.length === 1) {
             queryStrings.push(`filter=${filterStrings[0]}`);
         }
-        if (values.sort == 'alphabetic') {
+        if (values.sort === 'alphabetic') {
             queryStrings.push(`sort=name`);
         }
-        else if (values.sort == 'ascending') {
+        else if (values.sort === 'ascending') {
             queryStrings.push(`sort=price`);
         }
-        else if (values.sort == 'descending') {
+        else if (values.sort === 'descending') {
             queryStrings.push(`sort=-price`);
         }
         queryStrings.push(`page[size]=${values.recordsPerPage}`);
         queryStrings.push(`page[number]=${values.page}`);
         navigation(`/?${queryStrings.join("&")}`);
     }
-    //two quierys
-    useEffect(() => {
-        // console.log(query.get("category"))
-        // if (query.get("name")) {
-        //     initialValues.name = query.get("name")!;
-        // }
-        // if (query.get("category")) {
-        //     initialValues.categoryId = parseInt(query.get("category")!, 10);
-        // }
-        // if (query.get("pricemin")) {
-        //     initialValues.priceMin = parseInt(query.get("pricemin")!, 10);
-        // }
-        // if (query.get("pricemax")) {
-        //     initialValues.priceMax = parseInt(query.get("pricemax")!, 10);
-        // }
-        // if (query.get("sort")) {
-        //     initialValues.sort = query.get("sort")!;
-        // }
-        // if (query.get("page[size]")) {
-        //     initialValues.recordsPerPage = parseInt(query.get("page[size]")!, 10);
-        // }
-        // if (query.get("page[number]")) {
-        //     initialValues.page = parseInt(query.get("page[number]")!, 10);
-        // }
-        searchProducts(initialValues);
-    }, []);
 
     useEffect(() => {
-        console.log(products)
-    }, [products.isLoading])
+        searchProducts(initialValues);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return (
         <>
             <h3>Products List</h3>
             <DisplayErrors error={products.error as error} />
+            <DisplayErrors error={categories.error as error} />
             <Formik initialValues={initialValues} onSubmit={(values) => {
                 values.page = 1; searchProducts(values);
             }}>
@@ -126,7 +101,6 @@ export default function LandingPage() {
                                             {categories.data?.map((category: categoryDTO) => <option key={category.id} value={category.id}>{category.name}</option>)}
                                         </select>
                                     </div>
-
                                 </div>
                                 <div className="col-auto w-auto">
                                     <div className="input-group">
@@ -138,7 +112,6 @@ export default function LandingPage() {
                                             <span className="input-group-text">zł</span>
                                         </div>
                                     </div>
-
                                 </div>
                                 <div className="col-auto">
                                     -
@@ -168,14 +141,16 @@ export default function LandingPage() {
                                     </div>
                                 </div>
                                 <div className="col-auto">
-                                    <RecordsPerPageSelect 
-                                    value={formikProps.values.recordsPerPage}
-                                    onChange={(amountOfRecords) => {
-                                        formikProps.values.recordsPerPage = amountOfRecords;
-                                    }} />
+                                    <RecordsPerPageSelect
+                                        value={formikProps.values.recordsPerPage}
+                                        onChange={(amountOfRecords) => {
+                                            formikProps.values.recordsPerPage = amountOfRecords;
+                                        }} />
                                 </div>
                                 <div className="col-auto">
-                                    <button className="btn btn-primary" onClick={() => formikProps.submitForm()}>
+                                    <button className="btn btn-primary" onClick={() => {
+                                        formikProps.submitForm();
+                                    }}>
                                         Filter
                                     </button>
                                     <button
@@ -199,9 +174,7 @@ export default function LandingPage() {
                     </>
                 )}
             </Formik>
-
         </>
-
     )
 }
 
@@ -210,7 +183,7 @@ interface filterProductsForm {
     categoryId: number,
     priceMin: number,
     priceMax: number,
-    sort: string,
+    sort: 'ascending' | 'descending' | 'alphabetic' | '',
     page: number,
     recordsPerPage: number
 }
