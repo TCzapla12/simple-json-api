@@ -9,6 +9,7 @@ import RecordsPerPageSelect from "../utils/RecordsPerPageSelect";
 import DisplayErrors, { error } from "../utils/DisplayErrors";
 import { indirectUrlCategories, indirectUrlProduct } from "../endpoints";
 import PriceRangeInput from "../utils/PriceRangeInput";
+import SortSelect from "../utils/SortSelect";
 export default function LandingPage() {
     const query = new URLSearchParams(useLocation().search);
 
@@ -108,17 +109,7 @@ export default function LandingPage() {
                                     onChangeMax={(value) => formikProps.values.priceMax = value}
                                 />
                                 <div className="col-auto">
-                                    <div className="input-group">
-                                        <div className="input-group-prepend">
-                                            <span className="input-group-text">Sort by</span>
-                                        </div>
-                                        <select className="form-select"{...formikProps.getFieldProps("sort")}>
-                                            <option value="0">Default</option>
-                                            <option value="alphabetic">Name: A to Z</option>
-                                            <option value="ascending">Price: Low to High</option>
-                                            <option value="descending">Price: High to Low</option>
-                                        </select>
-                                    </div>
+                                    <SortSelect value={formikProps.values.sort} onChange={(value) => formikProps.values.sort = value} />
                                 </div>
                                 <div className="col-auto">
                                     <RecordsPerPageSelect
@@ -163,7 +154,7 @@ interface filterProductsForm {
     categoryId: number,
     priceMin: number,
     priceMax: number,
-    sort: 'ascending' | 'descending' | 'alphabetic' | '',
+    sort: string,
     page: number,
     recordsPerPage: number
 }
