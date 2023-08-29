@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Form, Formik } from "formik";
 import Pagination from "../utils/Pagination";
 import RecordsPerPageSelect from "../utils/RecordsPerPageSelect";
+import DisplayErrors, { error } from "../utils/DisplayErrors";
 export default function LandingPage() {
     const query = new URLSearchParams(useLocation().search);
     const products = useQuery("products?include=category&" + query);
@@ -97,15 +98,16 @@ export default function LandingPage() {
         searchProducts(initialValues);
     }, []);
 
-    // useEffect(() => {
-    //     console.log(query)
-    //     // console.log(products.data)
-    //     // console.log(products)
-    // }, [products.isLoading])
+    useEffect(() => {
+        // console.log(query)
+        // console.log(products.data)
+        console.log(products)
+    }, [products.isLoading])
 
     return (
         <>
             <h3>Products List</h3>
+            <DisplayErrors error={products.error as error} />
             <Formik initialValues={initialValues} onSubmit={(values) => {
                 values.page = 1; searchProducts(values);
             }}>
@@ -166,14 +168,28 @@ export default function LandingPage() {
                                             <option value="descending">High to Low</option>
                                         </select>
                                     </div>
-
                                 </div>
                                 <div className="col-auto">
-                                    <RecordsPerPageSelect onChange={(amountOfRecords) => {
-                                        formikProps.values.page = 1;
-                                        formikProps.values.recordsPerPage = amountOfRecords;
-                                    }} />
+                                    <div className="input-group">
+                                        <div className="input-group-prepend">
+                                            <span className="input-group-text">Records</span>
+                                        </div>
+                                        <select className="form-select"{...formikProps.getFieldProps("recordsPerPage")}>
+                                            <option value="10">10</option>
+                                            <option value="25">25</option>
+                                            <option value="50">50</option>
+                                            {/* <option value="descending">High to Low</option> */}
+                                        </select>
+                                    </div>
                                 </div>
+                                {/* <div className="col-auto">
+                                    <RecordsPerPageSelect 
+                                    value={formikProps.values.recordsPerPage}
+                                    onChange={(amountOfRecords) => {
+                                        formikProps.values.page = 1;
+                                        // formikProps.values.recordsPerPage = amountOfRecords;
+                                    }} />
+                                </div> */}
                                 <div className="col-auto">
                                     <button className="btn btn-primary" onClick={() => formikProps.submitForm()}>
                                         Filter
