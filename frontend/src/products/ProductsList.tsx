@@ -11,7 +11,7 @@ export default function ProductsList(props: productsListProps) {
         return <Loading />
     }
     else if (props.products?.length === 0) {
-        return <>There is no elements to display</>
+        return <>There are no elements to display</>
     }
     else return <table className="table">
         <thead>
@@ -44,6 +44,5 @@ export default function ProductsList(props: productsListProps) {
 interface productsListProps {
     products?: productDTO[];
     isLoading?: boolean;
-    errors?: any;
 }
 

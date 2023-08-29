@@ -99,8 +99,6 @@ export default function LandingPage() {
     }, []);
 
     useEffect(() => {
-        // console.log(query)
-        // console.log(products.data)
         console.log(products)
     }, [products.isLoading])
 
@@ -163,33 +161,19 @@ export default function LandingPage() {
                                         </div>
                                         <select className="form-select"{...formikProps.getFieldProps("sort")}>
                                             <option value="0">Default</option>
-                                            <option value="alphabetic">A to Z</option>
-                                            <option value="ascending">Low to High</option>
-                                            <option value="descending">High to Low</option>
+                                            <option value="alphabetic">Name: A to Z</option>
+                                            <option value="ascending">Price: Low to High</option>
+                                            <option value="descending">Price: High to Low</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div className="col-auto">
-                                    <div className="input-group">
-                                        <div className="input-group-prepend">
-                                            <span className="input-group-text">Records</span>
-                                        </div>
-                                        <select className="form-select"{...formikProps.getFieldProps("recordsPerPage")}>
-                                            <option value="10">10</option>
-                                            <option value="25">25</option>
-                                            <option value="50">50</option>
-                                            {/* <option value="descending">High to Low</option> */}
-                                        </select>
-                                    </div>
-                                </div>
-                                {/* <div className="col-auto">
                                     <RecordsPerPageSelect 
                                     value={formikProps.values.recordsPerPage}
                                     onChange={(amountOfRecords) => {
-                                        formikProps.values.page = 1;
-                                        // formikProps.values.recordsPerPage = amountOfRecords;
+                                        formikProps.values.recordsPerPage = amountOfRecords;
                                     }} />
-                                </div> */}
+                                </div>
                                 <div className="col-auto">
                                     <button className="btn btn-primary" onClick={() => formikProps.submitForm()}>
                                         Filter
@@ -207,7 +191,7 @@ export default function LandingPage() {
 
                             </div>
                         </Form>
-                        <ProductsList products={products.data as productDTO[]} isLoading={products.isLoading} errors={products.errors} />
+                        <ProductsList products={products.data as productDTO[]} isLoading={products.isLoading} />
                         <Pagination totalAmountOfPages={getPages(formikProps.values.recordsPerPage)} onChange={newPage => {
                             formikProps.values.page = newPage;
                             searchProducts(formikProps.values);

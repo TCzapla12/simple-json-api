@@ -1,4 +1,13 @@
+import { useEffect, useState } from "react";
+
 export default function RecordsPerPageSelect(props: recordsPerPageSelectProps) {
+
+    const [value, setValue] = useState(10);
+
+    useEffect(() => {
+        setValue((props.value));
+    }, [props.value])
+
     return (
         <div className="input-group">
             <div className="input-group-prepend">
@@ -6,8 +15,9 @@ export default function RecordsPerPageSelect(props: recordsPerPageSelectProps) {
             </div>
             <select
                 className="form-select"
-                defaultValue={10}
+                value={value}
                 onChange={(e) => {
+                    setValue(parseInt(e.currentTarget.value, 10));
                     props.onChange(parseInt(e.currentTarget.value, 10))
                 }}
             >
@@ -21,4 +31,5 @@ export default function RecordsPerPageSelect(props: recordsPerPageSelectProps) {
 
 interface recordsPerPageSelectProps {
     onChange(recordsPerPage: number): void;
+    value: number;
 }
