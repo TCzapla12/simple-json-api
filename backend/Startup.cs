@@ -16,7 +16,7 @@ namespace backend
         {
             services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
-            services.AddJsonApi<ApplicationDbContext>();
+            services.AddJsonApi<ApplicationDbContext>(options => options.IncludeTotalResourceCount = true);
 
             //services.AddScoped<IFileStorageService, AzureStorageService>();
             //services.AddScoped<IFileStorageService, InAppStorageService>();
